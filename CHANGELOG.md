@@ -63,3 +63,10 @@ of tagged releases.
   Windows IPC mechanism and bind reliably. Daemon startup also skips the
   `mkdir` / `access` / `rm` filesystem prep when the socket path is a Named
   Pipe, since pipes are not filesystem entries.
+- **Windows native messaging discovery:** `bbx install` now registers the
+  native messaging host in the per-browser `HKEY_CURRENT_USER` registry key
+  in addition to writing the manifest JSON file. Chromium on Windows
+  discovers native messaging hosts exclusively from the registry; the
+  manifest file alone is not found, so the extension would silently fail
+  every `connectNative` call with "Specified native messaging host not
+  found." `bbx uninstall` removes the matching key.

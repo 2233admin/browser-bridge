@@ -10,6 +10,7 @@ import {
   DEFAULT_EXTENSION_ID_ENV,
   getAllowedOrigins,
   getDefaultExtensionId,
+  getNativeMessagingRegistryKey,
   installNativeManifest,
   uninstallNativeManifest,
   parseExtensionId,
@@ -21,6 +22,34 @@ test('parseExtensionId accepts raw ids and extension origins', () => {
   assert.equal(parseExtensionId(id), id);
   assert.equal(parseExtensionId(`chrome-extension://${id}/`), id);
   assert.equal(parseExtensionId('not-an-id'), null);
+});
+
+test('getNativeMessagingRegistryKey returns per-browser HKCU paths', () => {
+  // Chromium discovers native messaging hosts on Windows from the registry,
+  // not from a fixed file location, so each supported browser needs a
+  // dedicated `HKEY_CURRENT_USER\Software\<vendor>\NativeMessagingHosts\<host>`
+  // key. The helper centralises the per-browser vendor path so the install
+  // and uninstall flows can register and clean up consistently.
+  assert.equal(
+    getNativeMessagingRegistryKey('chrome'),
+    'HKCU\\Software\\Google\\Chrome\\NativeMessagingHosts\\com.browserbridge.browser_bridge'
+  );
+  assert.equal(
+    getNativeMessagingRegistryKey('edge'),
+    'HKCU\\Software\\Microsoft\\Edge\\NativeMessagingHosts\\com.browserbridge.browser_bridge'
+  );
+  assert.equal(
+    getNativeMessagingRegistryKey('brave'),
+    'HKCU\\Software\\BraveSoftware\\Brave-Browser\\NativeMessagingHosts\\com.browserbridge.browser_bridge'
+  );
+  assert.equal(
+    getNativeMessagingRegistryKey('chromium'),
+    'HKCU\\Software\\Chromium\\NativeMessagingHosts\\com.browserbridge.browser_bridge'
+  );
+  assert.equal(
+    getNativeMessagingRegistryKey('arc'),
+    'HKCU\\Software\\Arc\\NativeMessagingHosts\\com.browserbridge.browser_bridge'
+  );
 });
 
 test('getDefaultExtensionId reads a valid env override', () => {
